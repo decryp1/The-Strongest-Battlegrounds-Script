@@ -1,0 +1,186 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+    Name = "private herkle hub -- TSB",
+    ConfigurationSaving = {Enabled = true, FolderName = "UtilityConfigs", FileName = "UtilityHub"},
+    LoadingTitle = "i'm pretty sigma,",
+    LoadingSubtitle = "r u sigma?",
+    Theme = "DarkBlue"
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+
+local LockOnToggle, LockLoop, RangeSlider
+local MaxLockOnRange = 30 
+local JumpPowerToggle, JumpPowerLoop
+LockOnToggle = Tab:CreateToggle({
+    Name = "Closest Player Lock-On",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            LockLoop = RunService.RenderStepped:Connect(function()
+                local closest, closestDist = nil, math.huge
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local distance = (LocalPlayer.Character.PrimaryPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                        if distance < closestDist and distance <= MaxLockOnRange then
+                            closest, closestDist = player, distance
+                        end
+                    end
+                end
+                if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
+                    local chrPos = LocalPlayer.Character.PrimaryPart.Position
+                    local targetPos = closest.Character.HumanoidRootPart.Position
+                    local modPos = Vector3.new(targetPos.X, chrPos.Y, targetPos.Z)
+                    LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(chrPos, modPos))
+                end
+            end)
+        else
+            if LockLoop then LockLoop:Disconnect() end
+        end
+    end,
+})
+
+RangeSlider = Tab:CreateSlider({
+    Name = "Lock-On Range",
+    Range = {10, 100},
+    Increment = 1,
+    Suffix = "Studs",
+    CurrentValue = 30,
+    Callback = function(Value)
+        MaxLockOnRange = Value
+    end,
+})
+
+local AntiStunToggle
+local isHoldingW = false
+local AntiStunLoop
+local function TrackKeys()
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.W then
+            isHoldingW = true
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.W then
+            isHoldingW = false
+        end
+    end)
+end
+
+local function StartAntiStun()
+    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    Humanoid = Character:WaitForChild("Humanoid")
+    TrackKeys()
+end
+-- snoopy
+AntiStunToggle = Tab:CreateToggle({
+    Name = "Anti Stun",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            StartAntiStun()
+            AntiStunLoop = RunService.RenderStepped:Connect(function()
+                if Humanoid then
+                    if isHoldingW then
+                        Humanoid.WalkSpeed = 27
+                    else
+                        Humanoid.WalkSpeed = 16
+                    end
+                end
+            end)
+        else
+            if AntiStunLoop then AntiStunLoop:Disconnect() end
+            if Humanoid then
+                Humanoid.WalkSpeed = 16
+            end
+        end
+    end,
+})
+
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    if AntiStunToggle.CurrentValue then
+        StartAntiStun()
+    end
+end)
+
+local Workspace = game:GetService("Workspace")
+local AntiRagdollToggle, FreezeOnLaunchToggle
+local AntiRagdollLoop, AnchorLaunchLoop
+
+AntiRagdollToggle = Tab:CreateToggle({
+    Name = "Freeze on Ragdoll",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            AntiRagdollLoop = RunService.RenderStepped:Connect(function()
+                local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                local Ragdoll = Character:FindFirstChild("Ragdoll")
+                if HumanoidRootPart then
+                    HumanoidRootPart.Anchored = Ragdoll and Ragdoll:IsA("Accessory")
+                end
+            end)
+        else
+            if AntiRagdollLoop then AntiRagdollLoop:Disconnect() end
+            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+            if HumanoidRootPart then HumanoidRootPart.Anchored = false end
+        end
+    end,
+})
+
+FreezeOnLaunchToggle = Tab:CreateToggle({
+    Name = "Freeze on Launch",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            AnchorLaunchLoop = RunService.RenderStepped:Connect(function()
+                local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+                local BeingLaunched = Character:FindFirstChild("BeingLaunched")
+                if HumanoidRootPart then
+                    HumanoidRootPart.Anchored = BeingLaunched and BeingLaunched:IsA("Accessory") -- bros tryna find chatgpt comments lmao :sob:
+                end
+            end)
+        else
+            if AnchorLaunchLoop then AnchorLaunchLoop:Disconnect() end
+            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")-- yeah but i actually made this script, so erm
+            if HumanoidRootPart then HumanoidRootPart.Anchored = false end
+        end
+    end,
+})
+
+
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    Character = Workspace.Live:WaitForChild(LocalPlayer.Name)
+end)
+
+local ExtraTab = Window:CreateTab("Extra", 4483362458)
+
+ExtraTab:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+    end
+})
+
+ExtraTab:CreateButton({
+    Name = "Remote Spy",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"))()
+    end
+})
+
+ExtraTab:CreateButton({
+    Name = "Dex Explorer",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+    end
+})
