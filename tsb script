@@ -14,6 +14,17 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "r u sigma?",
     Theme = "DarkBlue"
 })
+-- here are some themes for u to use
+-- the second name on the left is what you would put in the "Theme = "DarkBlue" box, js fyi
+--Default - Default
+--Amber Glow - AmberGlow
+--Amethyst - Amethyst
+--Bloom - Bloom
+--Dark Blue - DarkBlue
+--Green - Green
+--Light - Light
+--Ocean - Ocean
+--Serenity - Serenity
 
 local Tab = Window:CreateTab("Main", 4483362458)
 
