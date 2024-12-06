@@ -120,7 +120,7 @@ end)
 
 local LockOnTab = Window:CreateTab("Lock-On", 4483362458)
 
-local LockOnToggle, LockLoop, RangeSlider, SpeedSlider, DeadCheckToggle, VisualizerToggle
+local LockOnToggle, CameraLockToggle, LockLoop, CameraLockLoop, RangeSlider, SpeedSlider, DeadCheckToggle, VisualizerToggle
 local MaxLockOnRange = 30
 local LockOnSpeed = 0.1
 local DisregardDead = false
@@ -128,7 +128,7 @@ local Visualizer, VisualizerConnection
 local DiscRotation = Vector3.new(0, 0, 90)
 
 LockOnToggle = LockOnTab:CreateToggle({
-    Name = "Closest Player Lock-On", -- yeah this is pretty necessary, it's really op too
+    Name = "Closest Player Lock-On",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -162,8 +162,41 @@ LockOnToggle = LockOnTab:CreateToggle({
     end,
 })
 
+CameraLockToggle = LockOnTab:CreateToggle({
+    Name = "Camera Lock-On",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            CameraLockLoop = RunService.RenderStepped:Connect(function()
+                local closest, closestDist = nil, math.huge
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local humanoid = player.Character:FindFirstChild("Humanoid")
+                        local distance = (LocalPlayer.Character.PrimaryPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                        if distance < closestDist and distance <= MaxLockOnRange then
+                            if DisregardDead and humanoid and humanoid.Health > 0 then
+                                closest, closestDist = player, distance
+                            elseif not DisregardDead then
+                                closest, closestDist = player, distance
+                            end
+                        end
+                    end
+                end
+                if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
+                    local cam = workspace.CurrentCamera
+                    local camCFrame = cam.CFrame
+                    local camTargetCFrame = CFrame.new(cam.CFrame.Position, closest.Character.HumanoidRootPart.Position)
+                    cam.CFrame = camCFrame:Lerp(camTargetCFrame, LockOnSpeed)
+                end
+            end)
+        else
+            if CameraLockLoop then CameraLockLoop:Disconnect() end
+        end
+    end,
+})
+
 VisualizerToggle = LockOnTab:CreateToggle({
-    Name = "Lock-On Range Visualizer", -- this was actually a pain for no goddamn reason,, so i'll add comments for any skids or "upcoming programmers"
+    Name = "Lock-On Range Visualizer",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -171,7 +204,7 @@ VisualizerToggle = LockOnTab:CreateToggle({
             Visualizer.Name = "VisualizerESP"
             Visualizer.Anchored = true
             Visualizer.CanCollide = false
-            Visualizer.Size = Vector3.new(0, MaxLockOnRange * 2, MaxLockOnRange * 2)-- also, the values below this text determine how high above the ground it is.so if it were at 2, not -2, if would be above your head, and vice versa.
+            Visualizer.Size = Vector3.new(0, MaxLockOnRange * 2, MaxLockOnRange * 2)
             Visualizer.CFrame = CFrame.new(LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, -2.0, 0)) * CFrame.Angles(math.rad(DiscRotation.X), math.rad(DiscRotation.Y), math.rad(DiscRotation.Z))
             Visualizer.Material = Enum.Material.Neon
             Visualizer.Transparency = 0.95
@@ -190,7 +223,7 @@ VisualizerToggle = LockOnTab:CreateToggle({
                 Visualizer = nil
             end
             if VisualizerConnection then
-                VisualizerConnection:Disconnect() -- W toggle functionality
+                VisualizerConnection:Disconnect()
                 VisualizerConnection = nil
             end
         end
@@ -199,7 +232,7 @@ VisualizerToggle = LockOnTab:CreateToggle({
 
 RangeSlider = LockOnTab:CreateSlider({
     Name = "Lock-On Range",
-    Range = {10, 100}, -- change this to make the range of the lock-on even further. 100 is fine though, since it's actually a really long range at 100
+    Range = {10, 100},
     Increment = 1,
     Suffix = "Studs",
     CurrentValue = 30,
@@ -209,8 +242,8 @@ RangeSlider = LockOnTab:CreateSlider({
 })
 
 SpeedSlider = LockOnTab:CreateSlider({
-    Name = "Lock-On Speed/Smoothing ", -- i have no idea what to really name this, but it looks at them slower the lower it is, and anything above 1.2 breaks your character.
-    Range = {0, 1.1},-- better to not take game-breaking risks.
+    Name = "Lock-On Speed/Smoothing ",
+    Range = {0, 1.1},
     Increment = 0.01,
     Suffix = "",
     CurrentValue = 0.1,
@@ -220,7 +253,7 @@ SpeedSlider = LockOnTab:CreateSlider({
 })
 
 DeadCheckToggle = LockOnTab:CreateToggle({
-    Name = "Disregard Dead People", -- kinda just checks for if the lock-on target is dead before locking on. very useful for closet cheating.
+    Name = "Disregard Dead People",
     CurrentValue = false,
     Callback = function(Value)
         DisregardDead = Value
