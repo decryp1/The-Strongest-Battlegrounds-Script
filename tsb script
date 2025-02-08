@@ -18,7 +18,7 @@ local Tab = Window:CreateTab("Main", 4483362458)
 local AntiStunToggle
 local isHoldingW = false
 local AntiStunLoop
-local function TrackKeys()-- chat dont worry, this isnt a keylogger
+local function TrackKeys()
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         if input.KeyCode == Enum.KeyCode.W then
@@ -37,9 +37,9 @@ local function StartAntiStun()
     Humanoid = Character:WaitForChild("Humanoid")
     TrackKeys()
 end
--- snoopy
+
 AntiStunToggle = Tab:CreateToggle({
-    Name = "Anti Stun", --chat is this a slap battles reference?!
+    Name = "Anti Stun",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -74,7 +74,7 @@ local AntiRagdollToggle, FreezeOnLaunchToggle
 local AntiRagdollLoop, AnchorLaunchLoop
 
 AntiRagdollToggle = Tab:CreateToggle({
-    Name = "Anti Ragdoll", -- chat this MIGHT be a slap battles reference
+    Name = "Anti Ragdoll",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
@@ -102,12 +102,12 @@ FreezeOnLaunchToggle = Tab:CreateToggle({
                 local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
                 local BeingLaunched = Character:FindFirstChild("BeingLaunched")
                 if HumanoidRootPart then
-                    HumanoidRootPart.Anchored = BeingLaunched and BeingLaunched:IsA("Accessory") -- bros tryna find chatgpt comments lmao :sob:
+                    HumanoidRootPart.Anchored = BeingLaunched and BeingLaunched:IsA("Accessory")
                 end
             end)
         else
             if AnchorLaunchLoop then AnchorLaunchLoop:Disconnect() end
-            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")-- yeah but i actually made this script, so erm
+            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
             if HumanoidRootPart then HumanoidRootPart.Anchored = false end
         end
     end,
